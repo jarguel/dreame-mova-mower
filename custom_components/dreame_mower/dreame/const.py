@@ -1083,6 +1083,78 @@ ERROR_CODE_TO_ERROR_DESCRIPTION: Final = {
     ],
 }
 
+ERROR_CODE_TO_ERROR_DESCRIPTION_FR: Final = {
+    DreameMowerErrorCode.NO_ERROR: ["Aucune erreur", ""],
+    DreameMowerErrorCode.DROP: [
+        "Roues suspendues",
+        "Veuillez repositionner la tondeuse et la redémarrer.",
+    ],
+    DreameMowerErrorCode.TRAPPED: [
+        "Tondeuse bloquée",
+        "La tondeuse est coincée. Repositionnez-la et redémarrez.",
+    ],
+    DreameMowerErrorCode.BUMPER: [
+        "Capteur de collision bloqué",
+        "Nettoyez et tapotez doucement le capteur de collision.",
+    ],
+    DreameMowerErrorCode.GESTURE: [
+        "Tondeuse inclinée",
+        "Placez la tondeuse sur une surface plane et redémarrez.",
+    ],
+    DreameMowerErrorCode.BUMPER_REPEAT: [
+        "Capteur de collision bloqué",
+        "Nettoyez et tapotez doucement le capteur de collision.",
+    ],
+    DreameMowerErrorCode.DROP_REPEAT: [
+        "Roues suspendues",
+        "Veuillez repositionner la tondeuse et la redémarrer.",
+    ],
+    DreameMowerErrorCode.LEFT_WHEEL_MOTOR: [
+        "Roue gauche bloquée",
+        "Vérifiez qu'aucun objet ne bloque les roues.",
+    ],
+    DreameMowerErrorCode.RIGHT_WHEEL_MOTOR: [
+        "Roue droite bloquée",
+        "Vérifiez qu'aucun objet ne bloque les roues.",
+    ],
+    DreameMowerErrorCode.TURN_SUFFOCATE: [
+        "Tondeuse bloquée",
+        "La tondeuse ne peut pas tourner. Elle est peut-être coincée.",
+    ],
+    DreameMowerErrorCode.FORWARD_SUFFOCATE: [
+        "Tondeuse bloquée",
+        "La tondeuse ne peut pas avancer. Elle est peut-être coincée.",
+    ],
+    DreameMowerErrorCode.ROBOT_LOST: [
+        "Tondeuse perdue",
+        "La tondeuse ne peut pas se localiser. Ramenez-la à la station manuellement.",
+    ],
+    DreameMowerErrorCode.CHARGE_FAULT: [
+        "Erreur de charge",
+        "Nettoyez les contacts de charge avec un chiffon sec.",
+    ],
+    DreameMowerErrorCode.BATTERY_FAULT: [
+        "Erreur de batterie",
+        "Attendez que la température de la batterie revienne à la normale.",
+    ],
+    DreameMowerErrorCode.CHARGE_NO_ELECTRIC: [
+        "Station non alimentée",
+        "Vérifiez que le câble d'alimentation est bien branché.",
+    ],
+    DreameMowerErrorCode.HEART: [
+        "Erreur interne",
+        "Essayez de redémarrer la tondeuse.",
+    ],
+    DreameMowerErrorCode.DOCK_RETURN_FAILED: [
+        "Retour à la station échoué",
+        "La tondeuse n'a pas pu retourner à la station.",
+    ],
+    DreameMowerErrorCode.RETURN_TO_CHARGE_FAILED: [
+        "Retour à la station échoué",
+        "La tondeuse n'a pas pu retourner à la station de charge.",
+    ],
+}
+
 
 CONSUMABLE_TO_LIFE_WARNING_DESCRIPTION: Final = {
     DreameMowerProperty.BLADES_LEFT: [

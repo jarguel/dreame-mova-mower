@@ -20,6 +20,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from .dreame import DreameMowerDevice, DreameMowerProperty
+from .dreame.types import DreameMowerState
 from .dreame.resources import (
     CONSUMABLE_IMAGE,
 )
@@ -90,6 +91,7 @@ class DreameMowerDataUpdateCoordinator(DataUpdateCoordinator[DreameMowerDevice])
         self._ready = False
         self._available = False
         self._has_warning = False
+        self._was_error = False
         self._has_temporary_map = None
         self._two_factor_url = None
         self._properties_logged = False
@@ -109,6 +111,7 @@ class DreameMowerDataUpdateCoordinator(DataUpdateCoordinator[DreameMowerDevice])
         )
 
         self._device.listen(self._error_changed, DreameMowerProperty.ERROR)
+        self._device.listen(self._state_changed, DreameMowerProperty.STATE)
         self._device.listen(self._task_status_changed, DreameMowerProperty.TASK_STATUS)
         self._device.listen(self._cleaning_paused_changed, DreameMowerProperty.CLEANING_PAUSED)
         self._device.listen(self.set_updated_data)
@@ -190,6 +193,69 @@ class DreameMowerDataUpdateCoordinator(DataUpdateCoordinator[DreameMowerDevice])
             self._create_persistent_notification(content, f"{NOTIFICATION_ID_ERROR}_{self._device.status.error.value}")
 
         self._has_warning = has_warning
+
+    def _state_changed(self, previous_value=None) -> None:
+        is_error = self._device.status.state == DreameMowerState.ERROR
+        if is_error and not self._was_error:
+            error_detail = self._try_fetch_error_code()
+            lang = self.hass.config.language
+            if error_detail:
+                content = f"### {error_detail[0]}\n{error_detail[1]}"
+            elif lang == "fr":
+                content = "La tondeuse a signalé une erreur. Veuillez la vérifier."
+            else:
+                content = "The mower reported an error. Please check the mower."
+            # Always notify on error regardless of notification settings
+            if not self.device.disconnected and self.device.device_connected:
+                persistent_notification.create(
+                    hass=self.hass,
+                    message=content,
+                    title=self._device.name,
+                    notification_id=f"{DOMAIN}_{self._device.mac}_{NOTIFICATION_ID_ERROR}_state",
+                )
+            self._fire_event(
+                EVENT_ERROR,
+                {EVENT_ERROR: content},
+            )
+        elif not is_error and self._was_error:
+            persistent_notification.dismiss(
+                self.hass,
+                f"{DOMAIN}_{self._device.mac}_{NOTIFICATION_ID_ERROR}_state",
+            )
+        self._was_error = is_error
+
+    def _try_fetch_error_code(self) -> tuple[str, str] | None:
+        """Try to fetch detailed error code via cloud API."""
+        try:
+            from .dreame.types import DreameMowerErrorCode
+            from .dreame.const import (
+                ERROR_CODE_TO_ERROR_DESCRIPTION,
+                ERROR_CODE_TO_ERROR_DESCRIPTION_FR,
+            )
+            mapping = self._device.property_mapping.get(DreameMowerProperty.ERROR)
+            if not mapping:
+                return None
+            result = self._device._protocol.get_properties(
+                [{"did": str(DreameMowerProperty.ERROR.value), **mapping}]
+            )
+            if result:
+                for prop in result:
+                    if prop.get("code") == 0:
+                        value = prop.get("value")
+                        if value is not None and value > 0 and value in DreameMowerErrorCode._value2member_map_:
+                            error_code = DreameMowerErrorCode(value)
+                            lang = self.hass.config.language
+                            desc = None
+                            if lang == "fr":
+                                desc = ERROR_CODE_TO_ERROR_DESCRIPTION_FR.get(error_code)
+                            if not desc:
+                                desc = ERROR_CODE_TO_ERROR_DESCRIPTION.get(
+                                    error_code, ["Unknown error", ""]
+                                )
+                            return (desc[0], desc[1])
+        except Exception:
+            LOGGER.debug("Failed to fetch error code from cloud")
+        return None
 
     def _has_temporary_map_changed(self, previous_value=None) -> None:
         if self._device.status.has_temporary_map:

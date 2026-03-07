@@ -23,6 +23,7 @@ Start, stop, and dock your mower, monitor battery and charging status, and more 
 | First Cleaning Date | Sensor | Date of the very first mow |
 | Do Not Disturb | Switch | Enable/disable DnD mode |
 | Stop Mowing | Button | Stop current mowing task and return to dock |
+| Error notification | Persistent notification | Automatic alert when the mower reports an error (translated in FR/EN) |
 
 ## Installation
 
