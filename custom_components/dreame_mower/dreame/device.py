@@ -2676,11 +2676,12 @@ class DreameMowerDevice:
 
     def set_dnd(self, enabled: bool) -> bool:
         """Set do not disturb function"""
-        return (
-            self.set_property(DreameMowerProperty.DND, bool(enabled))
-            if not self.capability.dnd_task
-            else self.set_dnd_task(bool(enabled), self.status.dnd_start, self.status.dnd_end)
-        )
+        if not self.capability.dnd_task:
+            return self.set_property(DreameMowerProperty.DND, bool(enabled))
+        # Try task-based DnD first, fallback to simple property if tasks are empty
+        if self.status.dnd_tasks and len(self.status.dnd_tasks):
+            return self.set_dnd_task(bool(enabled), self.status.dnd_start, self.status.dnd_end)
+        return self.set_property(DreameMowerProperty.DND, bool(enabled))
 
     def set_dnd_start(self, dnd_start: str) -> bool:
         """Set do not disturb function"""
@@ -5265,31 +5266,39 @@ class DreameMowerDeviceStatus:
     def dnd(self) -> bool | None:
         """Returns DND is enabled."""
         if self._capability.dnd:
-            return (
-                bool(self._get_property(DreameMowerProperty.DND))
-                if not self._capability.dnd_task
-                else self.dnd_tasks[0].get("en") if self.dnd_tasks and len(self.dnd_tasks) else False
-            )
+            if not self._capability.dnd_task:
+                return bool(self._get_property(DreameMowerProperty.DND))
+            if self.dnd_tasks and len(self.dnd_tasks):
+                return self.dnd_tasks[0].get("en")
+            # Fallback: DND_TASK is empty, try simple DND property
+            dnd_val = self._get_property(DreameMowerProperty.DND)
+            if dnd_val is not None:
+                return bool(dnd_val)
+            return False
 
     @property
     def dnd_start(self) -> str | None:
         """Returns DND start time."""
         if self._capability.dnd:
-            return (
-                self._get_property(DreameMowerProperty.DND_START)
-                if not self._capability.dnd_task
-                else self.dnd_tasks[0].get("st") if self.dnd_tasks and len(self.dnd_tasks) else "22:00"
-            )
+            if not self._capability.dnd_task:
+                return self._get_property(DreameMowerProperty.DND_START)
+            if self.dnd_tasks and len(self.dnd_tasks):
+                return self.dnd_tasks[0].get("st")
+            # Fallback: try simple DND_START property
+            val = self._get_property(DreameMowerProperty.DND_START)
+            return val if val is not None else "22:00"
 
     @property
     def dnd_end(self) -> str | None:
         """Returns DND end time."""
         if self._capability.dnd:
-            return (
-                self._get_property(DreameMowerProperty.DND_END)
-                if not self._capability.dnd_task
-                else self.dnd_tasks[0].get("et") if self.dnd_tasks and len(self.dnd_tasks) else "08:00"
-            )
+            if not self._capability.dnd_task:
+                return self._get_property(DreameMowerProperty.DND_END)
+            if self.dnd_tasks and len(self.dnd_tasks):
+                return self.dnd_tasks[0].get("et")
+            # Fallback: try simple DND_END property
+            val = self._get_property(DreameMowerProperty.DND_END)
+            return val if val is not None else "08:00"
 
     @property
     def off_peak_charging(self) -> bool | None:
