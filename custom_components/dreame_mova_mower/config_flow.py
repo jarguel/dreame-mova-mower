@@ -265,7 +265,7 @@ class DreameMowerFlowHandler(ConfigFlow, domain=DOMAIN):
 
                 if any(self.model.startswith(prefix) for prefix in DREAME_MODELS):
                     if self.name is None:
-                        self.name = self.model
+                        self.name = f"MOVA {self.model}"
                     return await self.async_step_options()
                 else:
                     errors["base"] = "unsupported"
@@ -690,9 +690,13 @@ class DreameMowerFlowHandler(ConfigFlow, domain=DOMAIN):
             if self.model is None:
                 self.model = device_info["model"]
             if self.name is None:
-                self.name = (
+                name = (
                     device_info["customName"]
                     if device_info["customName"] and len(device_info["customName"]) > 0
                     else device_info["deviceInfo"]["displayName"]
                 )
+                if not name.startswith("MOVA "):
+                    self.name = f"MOVA {name}"
+                else:
+                    self.name = name
             self.device_id = device_info["did"]
