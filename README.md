@@ -45,7 +45,7 @@ Start, stop, and dock your mower, monitor battery and charging status, and more 
 
 ### Manual
 
-Copy the `custom_components/dreame_mower` folder to your Home Assistant `custom_components/` directory and restart.
+Copy the `custom_components/dreame_mova_mower` folder to your Home Assistant `custom_components/` directory and restart.
 
 ## Configuration
 
